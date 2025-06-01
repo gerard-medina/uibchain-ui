@@ -1,35 +1,107 @@
-@import './base.css';
+@import "tailwindcss";
+@custom-variant dark (&:where(.dark, .dark *));
 
-#app {
-  max-width: 1280px;
-  margin: 0 auto;
-  padding: 2rem;
-  font-weight: normal;
-}
+@theme {
+  --color-dark-blue: #282c32;
+  --color-blue: #0e6efd;
+  --color-light-blue: #60d7ff;
+  --color-soft-white: #e0e0e0;
+  --color-morph-border: rgba(230, 230, 230, 0.25);
 
-a,
-.green {
-  text-decoration: none;
-  color: hsla(160, 100%, 37%, 1);
-  transition: 0.4s;
-  padding: 3px;
-}
+  --soft-gradient: 145deg, #cacaca, #f0f0f0;
+  --dark-gradient: 145deg, #23262b, #34383d;
 
-@media (hover: hover) {
-  a:hover {
-    background-color: hsla(160, 100%, 37%, 0.2);
+  --shadow-dark:
+    -0.375em -0.375em 0.75em rgba(255, 255, 255, 0.15),
+    0.375em 0.375em 0.75em rgba(0, 0, 0, 0.75);
+  --shadow-light: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
+
+  --inset-shadow-light:
+    inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
+  --inset-shadow-dark: inset 4px 4px 12px #1c1f24, inset -4px -4px 12px #43484f;
+
+  --animate-drop: drop 4s linear infinite;
+  @keyframes drop {
+    0% {
+      top: -50%;
+    }
+    60% {
+      top: 140%;
+    }
+    100% {
+      top: 140%;
+    }
+  }
+  --animate-drop-2: drop-2 4s linear infinite;
+  @keyframes drop-2 {
+    41% {
+      top: -50%;
+    }
+    70% {
+      top: 150%;
+    }
+    100% {
+      top: 150%;
+    }
+  }
+
+  --animate-drop-3: drop-3 4s linear infinite;
+  @keyframes drop-3 {
+    0% {
+      opacity: 0;
+    }
+    55% {
+      opacity: 0;
+    }
+    56% {
+      top: -300%;
+      opacity: 1;
+    }
+    70% {
+      top: 350%;
+      opacity: 1;
+    }
+    71% {
+      opacity: 0;
+    }
+    100% {
+      top: 350%;
+      opacity: 0;
+    }
+  }
+  
+  --animate-rise: rise 4s linear infinite;
+  @keyframes rise {
+    0% {
+      bottom: -50%;
+    }
+    60% {
+      bottom: 140%;
+    }
+    100% {
+      bottom: 140%;
+    }
   }
 }
 
-@media (min-width: 1024px) {
-  body {
-    display: flex;
-    place-items: center;
-  }
-
-  #app {
-    display: grid;
-    grid-template-columns: 1fr 1fr;
-    padding: 0 2rem;
-  }
+body {
+  min-height: 100vh;
+  line-height: 1.6;
+  font-family:
+    Inter,
+    -apple-system,
+    BlinkMacSystemFont,
+    "Segoe UI",
+    Roboto,
+    Oxygen,
+    Ubuntu,
+    Cantarell,
+    "Fira Sans",
+    "Droid Sans",
+    "Helvetica Neue",
+    sans-serif;
+  font-size: 15px;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
 }
