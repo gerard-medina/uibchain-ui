@@ -1,6 +1,6 @@
 <template>
     <div :class="['button-container mt-5', cargando ? 'node-loading' : '']">
-        <button id="holo-button" :disabled="cargando" @click="realizarLlamada" class="hidden"></button>
+        <button id="holo-button" :disabled="cargando" @click="toggleConexion" class="hidden"></button>
         <h1 class="status-text mb-6">{{ cargando ? 'CONECTANDO' : 'INICIAR ENLACE' }}</h1>
 
         <label class="holo-button" for="holo-button">
@@ -50,24 +50,48 @@
 </template>
 
 <script setup>
-const props = defineProps({
-    cargando: Boolean
-})
+import { computed } from 'vue'
+import { useConnectionStore } from '@/store/connection'
 
+const props = defineProps({
+    cargando: Boolean,
+})
 const emit = defineEmits(['update:cargando'])
 
-const realizarLlamada = async () => {
-    console.log('Llamada a la API iniciada');
-    if (props.cargando) return
+const store = useConnectionStore()
+const conectado = computed(() => store.isConnected)
+const error = computed(() => store.lastError)
+
+async function toggleConexion() {
     emit('update:cargando', true)
-    try {
-        // Simulación de una llamada a un endpoint
-        await new Promise(resolve => setTimeout(resolve, 2000))
-    } catch (error) {
-        console.error('Error en la llamada:', error)
-    } finally {
-        emit('update:cargando', false)
+
+    if (!store.isConnected) {
+        try {
+            const url = sanitizeUrl(store.draftUrl)
+            const response = await fetch(`${url}/ping`, { timeout: 5000 })
+
+            if (!response.ok) throw new Error(`Código ${response.status}`)
+
+            store.connect(store.draftUrl)
+            store.setError(null)
+        } catch (err) {
+            console.error(err)
+            store.setError('No se pudo conectar al nodo')
+            store.disconnect()
+        }
+    } else {
+        store.disconnect()
+        store.setError(null)
     }
+
+    emit('update:cargando', false)
+}
+
+function sanitizeUrl(input) {
+    if (!/^https?:\/\//.test(input)) {
+        return `http://${input}`
+    }
+    return input
 }
 </script>
 

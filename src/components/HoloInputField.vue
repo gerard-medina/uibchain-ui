@@ -2,7 +2,8 @@
     <!-- From Uiverse.io by reglobby -->
     <div :class="['input-container w-xs md:w-md', cargando ? 'node-loading' : '']">
         <div class="input-field-container">
-            <input type="text" class="holo-input" placeholder="192.168.1.1" />
+            <input id="node-url-input" type="text" class="holo-input" placeholder="192.168.1.1" v-model="url"
+                :disabled="cargando" />
             <div class="input-border"></div>
             <div class="holo-scan-line"></div>
             <div class="input-glow"></div>
@@ -90,8 +91,16 @@
 </template>
 
 <script setup>
-const props = defineProps({
-    cargando: Boolean
+import { computed } from 'vue'
+import { useConnectionStore } from '@/store/connection'
+
+defineProps(['cargando'])
+
+const store = useConnectionStore()
+
+const url = computed({
+    get: () => store.draftUrl,
+    set: (val) => store.setDraftUrl(val),
 })
 </script>
 
