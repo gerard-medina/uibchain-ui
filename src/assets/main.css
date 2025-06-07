@@ -23,63 +23,20 @@
   --animate-drop: drop 4s linear infinite;
   @keyframes drop {
     0% {
-      top: -50%;
-    }
-    60% {
-      top: 140%;
+      transform: translateY(0);
     }
     100% {
-      top: 140%;
-    }
-  }
-  --animate-drop-2: drop-2 4s linear infinite;
-  @keyframes drop-2 {
-    41% {
-      top: -50%;
-    }
-    70% {
-      top: 150%;
-    }
-    100% {
-      top: 150%;
+      transform: translateY(120vh);
     }
   }
 
-  --animate-drop-3: drop-3 4s linear infinite;
-  @keyframes drop-3 {
-    0% {
-      opacity: 0;
-    }
-    55% {
-      opacity: 0;
-    }
-    56% {
-      top: -300%;
-      opacity: 1;
-    }
-    70% {
-      top: 350%;
-      opacity: 1;
-    }
-    71% {
-      opacity: 0;
-    }
-    100% {
-      top: 350%;
-      opacity: 0;
-    }
-  }
-  
   --animate-rise: rise 4s linear infinite;
   @keyframes rise {
     0% {
-      bottom: -50%;
-    }
-    60% {
-      bottom: 140%;
+      transform: translateY(120vh);
     }
     100% {
-      bottom: 140%;
+      transform: translateY(0);
     }
   }
 }
