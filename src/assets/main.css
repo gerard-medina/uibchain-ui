@@ -4,8 +4,9 @@
 @theme {
   --color-dark-blue: #282c32;
   --color-blue: #0e6efd;
-  --color-light-blue: #60d7ff;
+  --color-light-blue: rgba(0, 195, 255, 0.9);
   --color-soft-white: #e0e0e0;
+  --color-soft-black: #171717;
   --color-morph-border: rgba(230, 230, 230, 0.25);
 
   --soft-gradient: 145deg, #cacaca, #f0f0f0;
@@ -17,8 +18,9 @@
   --shadow-light: 20px 20px 60px #bebebe, -20px -20px 60px #ffffff;
 
   --inset-shadow-light:
-    inset 4px 4px 12px #c5c5c5, inset -4px -4px 12px #ffffff;
-  --inset-shadow-dark: inset 4px 4px 12px #1c1f24, inset -4px -4px 12px #43484f;
+    inset 4px 4px 10px #bcbcbc, inset -4px -4px 10px #ffffff;
+  --inset-shadow-dark: inset 4px 4px 12px #000000ad, inset -4px -4px 12px rgba(255, 255, 255, 0.15);
+  --inset-shadow-soft-black: inset 2px 5px 10px rgb(5, 5, 5);
 
   --animate-drop: drop 4s linear infinite;
   @keyframes drop {

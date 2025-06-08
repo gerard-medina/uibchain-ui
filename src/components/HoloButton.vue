@@ -1,5 +1,5 @@
 <template>
-    <div :class="['button-container mt-5', cargando ? 'node-loading' : '']">
+    <div :class="['button-container', cargando ? 'node-loading' : '']">
         <button id="holo-button" :disabled="cargando" @click="toggleConexion" class="hidden"></button>
         <h1 class="status-text mb-6">{{ cargando ? 'CONECTANDO' : 'INICIAR ENLACE' }}</h1>
 
@@ -68,7 +68,10 @@ async function toggleConexion() {
     if (!store.isConnected) {
         try {
             const url = sanitizeUrl(store.draftUrl)
-            const response = await fetch(`${url}/ping`, { timeout: 5000 })
+            const [response] = await Promise.all([
+                fetch(`${url}/ping`, { timeout: 5000 }),
+                new Promise(resolve => setTimeout(resolve, 2000))
+            ]);
 
             if (!response.ok) throw new Error(`Código ${response.status}`)
 

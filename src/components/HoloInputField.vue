@@ -1,6 +1,6 @@
 <template>
     <!-- From Uiverse.io by reglobby -->
-    <div :class="['input-container w-xs md:w-md', cargando ? 'node-loading' : '']">
+    <div :class="['input-container w-3xs md:w-md', cargando ? 'node-loading' : '']">
         <div class="input-field-container">
             <input id="node-url-input" type="text" class="holo-input" placeholder="192.168.1.1" v-model="url"
                 :disabled="cargando" />
