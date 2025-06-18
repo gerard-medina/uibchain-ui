@@ -1,7 +1,9 @@
 <template>
-    <div :class="['button-container', cargando ? 'node-loading' : '']">
+    <div :class="['button-container', cargando ? 'node-loading' : connection.isConnected ? 'node-loaded' : '']">
         <button id="holo-button" :disabled="cargando" @click="toggleConexion" class="hidden"></button>
-        <h1 class="status-text mb-6">{{ cargando ? 'CONECTANDO' : 'INICIAR ENLACE' }}</h1>
+        <h1 class="status-text mb-6">
+            {{ cargando ? 'CONECTANDO' : connection.isConnected ? 'CONECTADO' : 'INICIAR ENLACE' }}
+        </h1>
 
         <label class="holo-button" for="holo-button">
             <div class="holo-box">
@@ -39,63 +41,49 @@
 
             <div class="holo-glow"></div>
         </label>
-
-        <div class="data-chips">
-            <div class="data-chip">STATUS: IDLE [0x4F]</div>
-            <div class="data-chip">QUANTUM VERIFY: 82.6%</div>
-            <div class="data-chip">SYNCH: PENDING</div>
-            <div class="data-chip">0x7A2C8B9F</div>
-        </div>
     </div>
 </template>
 
 <script setup>
-import { computed } from 'vue'
 import { useConnectionStore } from '@/store/connection'
+import { useAuthStore } from '@/store/auth'
 
 const props = defineProps({
     cargando: Boolean,
 })
 const emit = defineEmits(['update:cargando'])
 
-const store = useConnectionStore()
-const conectado = computed(() => store.isConnected)
-const error = computed(() => store.lastError)
+const connection = useConnectionStore()
+const auth = useAuthStore()
 
 async function toggleConexion() {
     emit('update:cargando', true)
 
-    if (!store.isConnected) {
+    if (!connection.isConnected) {
         try {
-            const url = sanitizeUrl(store.draftUrl)
             const [response] = await Promise.all([
-                fetch(`${url}/ping`, { timeout: 5000 }),
+                fetch(`${connection.draftUrl}/ping`, { timeout: 5000 }),
                 new Promise(resolve => setTimeout(resolve, 2000))
             ]);
 
             if (!response.ok) throw new Error(`Código ${response.status}`)
 
-            store.connect(store.draftUrl)
-            store.setError(null)
+            connection.connect(connection.draftUrl)
+            connection.setError(null)
         } catch (err) {
             console.error(err)
-            store.setError('No se pudo conectar al nodo')
-            store.disconnect()
+            connection.setError('No se pudo conectar al nodo')
+            connection.disconnect()
         }
     } else {
-        store.disconnect()
-        store.setError(null)
+        connection.disconnect()
+        auth.logout()
+        connection.setError(null)
     }
 
     emit('update:cargando', false)
 }
 
-function sanitizeUrl(input) {
-    if (!/^https?:\/\//.test(input)) {
-        return `http://${input}`
-    }
-    return input
-}
 </script>
 
 <style scoped>
@@ -191,20 +179,83 @@ function sanitizeUrl(input) {
 }
 
 .node-loading .holo-box {
+    border-color: rgba(255, 213, 0, 0.7);
+    box-shadow:
+        0 0 10px rgba(255, 213, 0, 0.6),
+        inset 0 0 15px rgba(255, 213, 0, 0.4);
+}
+
+.node-loading .holo-inner {
+    background-color: rgba(255, 213, 0, 0.7);
+    box-shadow: 0 0 15px rgba(255, 213, 0, 1);
+    opacity: 1;
+    transform: scale(1) rotate(45deg);
+}
+
+.node-loading .scan-effect {
+    animation: scan-on 2s infinite;
+    opacity: 1;
+    background: linear-gradient(90deg,
+            transparent,
+            rgba(255, 213, 0, 0.8),
+            transparent);
+}
+
+.node-loading .holo-glow {
+    background: radial-gradient(ellipse at center,
+            rgba(255, 213, 0, 0.2) 0%,
+            rgba(255, 213, 0, 0.1) 40%,
+            rgba(0, 0, 0, 0) 70%);
+    animation: active-glow-pulse 2s infinite alternate;
+}
+
+.node-loading .corner-accent {
+    width: 20px;
+    height: 20px;
+    border-color: rgba(255, 213, 0, 0.7);
+}
+
+.node-loading .status-text {
+    color: rgba(255, 213, 0, 0.8);
+    text-shadow: 0 0 5px rgba(255, 213, 0, 0.5);
+}
+
+.node-loading .activation-ring {
+    animation: ring-expand 2s ease-out forwards;
+    border-color: rgba(255, 213, 0, 0.7);
+}
+
+.node-loading .holo-particle {
+    background-color: rgba(255, 213, 0, 0.7);
+    animation: particle-float 3s infinite ease-in-out;
+}
+
+.node-loading .cube-face {
+    background-color: rgba(255, 213, 0, 0.3);
+    border-color: rgba(255, 213, 0, 0.5);
+    box-shadow: 0 0 5px rgba(255, 213, 0, 0.3);
+}
+
+.node-loading .holo-label {
+    color: rgba(255, 213, 0, 0.8);
+    text-shadow: 0 0 5px rgba(255, 213, 0, 0.5);
+}
+
+.node-loaded .holo-box {
     border-color: rgba(0, 255, 136, 0.7);
     box-shadow:
         0 0 10px rgba(0, 255, 136, 0.6),
         inset 0 0 15px rgba(0, 255, 136, 0.4);
 }
 
-.node-loading .holo-inner {
+.node-loaded .holo-inner {
     background-color: rgba(0, 255, 136, 0.7);
     box-shadow: 0 0 15px rgba(0, 255, 136, 1);
     opacity: 1;
     transform: scale(1) rotate(45deg);
 }
 
-.node-loading .scan-effect {
+.node-loaded .scan-effect {
     animation: scan-on 2s infinite;
     opacity: 1;
     background: linear-gradient(90deg,
@@ -243,14 +294,6 @@ function sanitizeUrl(input) {
     }
 }
 
-.node-loading .holo-glow {
-    background: radial-gradient(ellipse at center,
-            rgba(0, 255, 136, 0.2) 0%,
-            rgba(0, 255, 136, 0.1) 40%,
-            rgba(0, 0, 0, 0) 70%);
-    animation: active-glow-pulse 2s infinite alternate;
-}
-
 @keyframes active-glow-pulse {
     0% {
         opacity: 0.4;
@@ -261,6 +304,46 @@ function sanitizeUrl(input) {
         opacity: 0.8;
         filter: blur(20px) brightness(1.5);
     }
+}
+
+.node-loaded .holo-glow {
+    background: radial-gradient(ellipse at center,
+            rgba(0, 255, 136, 0.2) 0%,
+            rgba(0, 255, 136, 0.1) 40%,
+            rgba(0, 0, 0, 0) 70%);
+    animation: active-glow-pulse 2s infinite alternate;
+}
+
+.node-loaded .corner-accent {
+    width: 20px;
+    height: 20px;
+    border-color: rgba(0, 255, 136, 0.7);
+}
+
+.node-loaded .status-text {
+    color: rgba(0, 255, 136, 0.8);
+    text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
+}
+
+.node-loaded .activation-ring {
+    animation: ring-expand 2s ease-out forwards;
+    border-color: rgba(0, 255, 136, 0.7);
+}
+
+.node-loaded .holo-particle {
+    background-color: rgba(0, 255, 136, 0.7);
+    animation: particle-float 3s infinite ease-in-out;
+}
+
+.node-loaded .cube-face {
+    background-color: rgba(0, 255, 136, 0.3);
+    border-color: rgba(0, 255, 136, 0.5);
+    box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
+}
+
+.node-loaded .holo-label {
+    color: rgba(0, 255, 136, 0.8);
+    text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
 }
 
 .corner-accent {
@@ -308,7 +391,7 @@ function sanitizeUrl(input) {
 .node-loading .corner-accent {
     width: 20px;
     height: 20px;
-    border-color: rgba(0, 255, 136, 0.7);
+    border-color: rgba(255, 213, 0, 0.7);
 }
 
 .status-text {
@@ -321,6 +404,11 @@ function sanitizeUrl(input) {
 }
 
 .node-loading .status-text {
+    color: rgba(255, 213, 0, 0.8);
+    text-shadow: 0 0 5px rgba(255, 213, 0, 0.5);
+}
+
+.node-loaded .status-text {
     color: rgba(0, 255, 136, 0.8);
     text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
 }
@@ -347,6 +435,11 @@ function sanitizeUrl(input) {
 
 .node-loading .activation-ring {
     animation: ring-expand 2s ease-out forwards;
+    border-color: rgba(255, 213, 0, 0.7);
+}
+
+.node-loaded .activation-ring {
+    animation: ring-expand 2s ease-out forwards;
     border-color: rgba(0, 255, 136, 0.7);
 }
 
@@ -359,6 +452,18 @@ function sanitizeUrl(input) {
 }
 
 .node-loading .activation-ring:nth-child(3) {
+    animation-delay: 0.6s;
+}
+
+.node-loaded .activation-ring:nth-child(1) {
+    animation-delay: 0s;
+}
+
+.node-loaded .activation-ring:nth-child(2) {
+    animation-delay: 0.3s;
+}
+
+.node-loaded .activation-ring:nth-child(3) {
     animation-delay: 0.6s;
 }
 
@@ -393,6 +498,11 @@ function sanitizeUrl(input) {
 }
 
 .node-loading .holo-particle {
+    background-color: rgba(255, 213, 0, 0.7);
+    animation: particle-float 3s infinite ease-in-out;
+}
+
+.node-loaded .holo-particle {
     background-color: rgba(0, 255, 136, 0.7);
     animation: particle-float 3s infinite ease-in-out;
 }
@@ -428,6 +538,42 @@ function sanitizeUrl(input) {
 }
 
 .node-loading .holo-particle:nth-child(6) {
+    top: 60%;
+    left: 40%;
+    animation-delay: 3.1s;
+}
+
+.node-loaded .holo-particle:nth-child(1) {
+    top: 20%;
+    left: 30%;
+    animation-delay: 0.1s;
+}
+
+.node-loaded .holo-particle:nth-child(2) {
+    top: 70%;
+    left: 20%;
+    animation-delay: 0.7s;
+}
+
+.node-loaded .holo-particle:nth-child(3) {
+    top: 40%;
+    left: 80%;
+    animation-delay: 1.3s;
+}
+
+.node-loaded .holo-particle:nth-child(4) {
+    top: 60%;
+    left: 60%;
+    animation-delay: 1.9s;
+}
+
+.node-loaded .holo-particle:nth-child(5) {
+    top: 30%;
+    left: 45%;
+    animation-delay: 2.5s;
+}
+
+.node-loaded .holo-particle:nth-child(6) {
     top: 60%;
     left: 40%;
     animation-delay: 3.1s;
@@ -478,6 +624,17 @@ function sanitizeUrl(input) {
 }
 
 .node-loading .cube-face {
+    background-color: rgba(255, 213, 0, 0.3);
+    border-color: rgba(255, 213, 0, 0.5);
+    box-shadow: 0 0 5px rgba(255, 213, 0, 0.3);
+}
+
+.node-loaded .cube-transform {
+    opacity: 1;
+    animation: cube-rotate 5s infinite linear;
+}
+
+.node-loaded .cube-face {
     background-color: rgba(0, 255, 136, 0.3);
     border-color: rgba(0, 255, 136, 0.5);
     box-shadow: 0 0 5px rgba(0, 255, 136, 0.3);
@@ -507,6 +664,30 @@ function sanitizeUrl(input) {
     transform: rotateX(-90deg) translateZ(15px);
 }
 
+.node-loaded .cube-face:nth-child(1) {
+    transform: translateZ(15px);
+}
+
+.node-loaded .cube-face:nth-child(2) {
+    transform: rotateY(180deg) translateZ(15px);
+}
+
+.node-loaded .cube-face:nth-child(3) {
+    transform: rotateY(90deg) translateZ(15px);
+}
+
+.node-loaded .cube-face:nth-child(4) {
+    transform: rotateY(-90deg) translateZ(15px);
+}
+
+.node-loaded .cube-face:nth-child(5) {
+    transform: rotateX(90deg) translateZ(15px);
+}
+
+.node-loaded .cube-face:nth-child(6) {
+    transform: rotateX(-90deg) translateZ(15px);
+}
+
 @keyframes cube-rotate {
     0% {
         transform: rotateX(0) rotateY(0) rotateZ(0);
@@ -529,68 +710,13 @@ function sanitizeUrl(input) {
 }
 
 .node-loading .holo-label {
+    color: rgba(255, 213, 0, 0.8);
+    text-shadow: 0 0 5px rgba(255, 213, 0, 0.5);
+}
+
+.node-loaded .holo-label {
     color: rgba(0, 255, 136, 0.8);
     text-shadow: 0 0 5px rgba(0, 255, 136, 0.5);
 }
 
-.data-chips {
-    position: absolute;
-    width: 100%;
-    height: 100%;
-    pointer-events: none;
-    color: white;
-}
-
-.data-chip {
-    position: absolute;
-    padding: 5px 8px;
-    background-color: rgba(0, 24, 55, 0.7);
-    border: 1px solid rgba(0, 162, 255, 0.5);
-    border-radius: 4px;
-    font-size: 10px;
-    opacity: 0;
-    transform: scale(0);
-    transition: all 0.3s ease;
-}
-
-.node-loading .data-chips .data-chip {
-    animation: chip-appear 0.5s ease forwards;
-    border-color: rgba(0, 255, 136, 0.5);
-}
-
-@keyframes chip-appear {
-    0% {
-        opacity: 0;
-        transform: scale(0);
-    }
-
-    100% {
-        opacity: 1;
-        transform: scale(1);
-    }
-}
-
-.data-chip:nth-child(1) {
-    top: -60px;
-    left: 50px;
-    animation-delay: 0.5s;
-}
-
-.data-chip:nth-child(2) {
-    top: 40px;
-    left: -120px;
-    animation-delay: 1.2s;
-}
-
-.data-chip:nth-child(3) {
-    top: 120px;
-    left: 60px;
-    animation-delay: 1.8s;
-}
-
-.data-chip:nth-child(4) {
-    top: 20px;
-    left: 120px;
-    animation-delay: 2.3s;
-}
 </style>

@@ -1,6 +1,6 @@
 <template>
     <!-- From Uiverse.io by reglobby -->
-    <div :class="['input-container w-3xs md:w-md', cargando ? 'node-loading' : '']">
+    <div :class="['input-container w-3xs md:w-md', cargando ? 'node-loading' : connection.isConnected ? 'node-loaded' : '']">
         <div class="input-field-container">
             <input id="node-url-input" type="text" class="holo-input" placeholder="192.168.1.1" v-model="url"
                 :disabled="cargando" />
@@ -96,11 +96,11 @@ import { useConnectionStore } from '@/store/connection'
 
 defineProps(['cargando'])
 
-const store = useConnectionStore()
+const connection = useConnectionStore()
 
 const url = computed({
-    get: () => store.draftUrl,
-    set: (val) => store.setDraftUrl(val),
+    get: () => connection.draftUrl,
+    set: (val) => connection.setDraftUrl(val),
 })
 </script>
 
@@ -125,7 +125,7 @@ const url = computed({
     background: rgba(0, 12, 36, 0.7);
     border: none;
     outline: none;
-    padding: 0 60px 0 20px;
+    padding: 0 30px 0 30px;
     color: rgba(0, 195, 255, 0.9);
     font-family: "Orbitron", sans-serif;
     font-size: 18px;
@@ -362,8 +362,8 @@ const url = computed({
 
 .input-status {
     position: absolute;
-    bottom: -25px;
-    right: 0;
+    top: -25px;
+    left: 0;
     font-size: 12px;
     color: rgba(0, 150, 255, 0.5);
     letter-spacing: 1px;
@@ -439,6 +439,14 @@ const url = computed({
     border-color: rgba(0, 180, 255, 0.7);
 }
 
+.node-loading .holo-input~.input-border {
+    border-color: rgba(255, 213, 0, 0.7);
+}
+
+.node-loaded .holo-input~.input-border {
+    border-color: rgba(0, 255, 136, 0.7);
+}
+
 .node-loading .holo-input~.input-border::before,
 .node-loading .holo-input~.input-border::after,
 .holo-input:focus~.input-border::before,
@@ -446,6 +454,16 @@ const url = computed({
     border-color: rgba(0, 180, 255, 1);
     width: 30px;
     height: 30px;
+}
+
+.node-loading .holo-input~.input-border::before,
+.node-loading .holo-input~.input-border::after {
+    border-color: rgba(255, 213, 0, 1);
+}
+
+.node-loaded .holo-input~.input-border::before,
+.node-loaded .holo-input~.input-border::after {
+    border-color: rgba(0, 255, 136, 1);
 }
 
 .node-loading .holo-input~.holo-scan-line,
@@ -465,6 +483,16 @@ const url = computed({
     background: rgba(0, 200, 255, 1);
     box-shadow: 0 0 15px rgba(0, 200, 255, 0.7);
     transform: scale(1.2);
+}
+
+.node-loading .holo-input~.input-active-indicator {
+    background: rgba(255, 213, 0, 1);
+    box-shadow: 0 0 15px rgba(255, 213, 0, 0.7);
+}
+
+.node-loaded .holo-input~.input-active-indicator {
+    background: rgba(0, 255, 136, 1);
+    box-shadow: 0 0 15px rgba(0, 255, 136, 0.7);
 }
 
 .node-loading .holo-input~.input-data-visualization,
@@ -529,6 +557,17 @@ const url = computed({
     z-index: 3;
 }
 
+.node-loading .holo-input~.power-indicator {
+    background: linear-gradient(90deg,
+            rgba(255, 213, 0, 0.7) 0%,
+            rgba(255, 213, 0, 0.3) 100%);
+}
+
+.node-loaded .holo-input~.power-indicator {
+    background: linear-gradient(90deg,
+            rgba(0, 255, 136, 0.7) 0%,
+            rgba(0, 255, 136, 0.3) 100%);
+}
 
 .node-loading .holo-input~.power-indicator,
 .holo-input:focus~.power-indicator {
@@ -590,13 +629,18 @@ const url = computed({
     position: absolute;
     bottom: -40px;
     display: flex;
-    justify-content: center;
+    justify-content: space-between;
+    padding: 0 12px;
     align-items: flex-start;
     height: 40px;
-    width: 260px;
+    width: 100%;
     gap: 3px;
     left: 50%;
     transform: translateX(-50%);
+}
+
+.frequency-spectrum:not(.node-loading *):not(.node-loaded *) {
+    display: none;
 }
 
 .frequency-bar {
@@ -610,86 +654,111 @@ const url = computed({
 }
 
 .node-loading .frequency-spectrum .frequency-bar {
+    background: rgba(255, 213, 0, 0.5);
+    animation: frequency-animation 1.5s infinite ease;
+}
+
+.node-loaded .frequency-spectrum .frequency-bar {
     background: rgba(0, 255, 136, 0.5);
     animation: frequency-animation 1.5s infinite ease;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(1),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(1) {
     animation-delay: 0.1s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(2),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(2) {
     animation-delay: 0.2s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(3),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(3) {
     animation-delay: 0.1s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(4),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(4) {
     animation-delay: 0.3s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(5),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(5) {
     animation-delay: 0.5s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(6),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(6) {
     animation-delay: 0.2s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(7),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(7) {
     animation-delay: 0.4s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(8),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(8) {
     animation-delay: 0.1s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(9),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(9) {
     animation-delay: 0.3s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(10),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(10) {
     animation-delay: 0.2s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(11),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(11) {
     animation-delay: 0.5s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(12),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(12) {
     animation-delay: 0.3s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(13)
 .node-loading .frequency-spectrum .frequency-bar:nth-child(13) {
     animation-delay: 0.1s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(14),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(14) {
     animation-delay: 0.4s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(15),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(15) {
     animation-delay: 0.2s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(16),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(16) {
     animation-delay: 0.3s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(17),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(17) {
     animation-delay: 0.1s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(18),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(18) {
     animation-delay: 0.5s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(19),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(19) {
     animation-delay: 0.2s;
 }
 
+.node-loaded .frequency-spectrum .frequency-bar:nth-child(20),
 .node-loading .frequency-spectrum .frequency-bar:nth-child(20) {
     animation-delay: 0.4s;
 }

@@ -1,19 +1,25 @@
 import { createRouter, createWebHistory } from 'vue-router'
 import { useAuthStore } from '@/store/auth'
+import { useConnectionStore } from '@/store/connection'
 
 import Home from '@/views/Home.vue'
-// import Admin from '@/views/Admin.vue'
-// import Unauthorized from '@/views/Unauthorized.vue'
+import Blockchain from '@/views/Blockchain.vue'
+import MyWallet from '@/views/MyWallet.vue'
 
 const routes = [
   { path: '/', name: 'Home', component: Home },
-  // {
-  //   path: '/admin',
-  //   name: 'Admin',
-  //   component: Admin,
-  //   meta: { requiresAuth: true, role: 'admin' }
-  // },
-  // { path: '/unauthorized', name: 'Unauthorized', component: Unauthorized },
+  {
+    path: '/blockchain',
+    name: 'Blockchain',
+    component: Blockchain,
+    meta: { requiresNode: true }
+  },
+  {
+    path: '/mi-wallet',
+    name: 'MyWallet',
+    component: MyWallet,
+    meta: { requiresAuth: true, requiresNode: true }
+  }
 ]
 
 const router = createRouter({
@@ -23,12 +29,13 @@ const router = createRouter({
 
 router.beforeEach((to, from) => {
   const auth = useAuthStore()
+  const connection = useConnectionStore()
   if (to.meta.requiresAuth && !auth.isAuthenticated) {
     return { name: 'Home' }
   }
-  // if (to.meta.role && auth.user?.role !== to.meta.role) {
-  //   return { name: 'Unauthorized' }
-  // }
+  if (to.meta.requiresNode && !connection.isConnected) {
+    return { name: 'Home' }
+  }
 })
 
 export default router
