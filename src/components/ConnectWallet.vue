@@ -27,7 +27,7 @@
                             d="M8 1a2 2 0 0 1 2 2v4H6V3a2 2 0 0 1 2-2zm3 6V3a3 3 0 0 0-6 0v4a2 2 0 0 0-2 2v5a2 2 0 0 0 2 2h6a2 2 0 0 0 2-2V9a2 2 0 0 0-2-2z">
                         </path>
                     </svg>
-                    <input v-model="password" type="password" name="password" class="input-field h-full" placeholder="Contraseña">
+                    <input v-model="password" type="password" name="password" class="input-field h-full" placeholder="Contraseña" autocomplete="current-password">
                 </div>
                 <div class="flex flex-col md:flex-row justify-center items-center gap-2 md:gap-5">
                     <button type="submit" class="neu-button text-light-blue inset-shadow-light dark:inset-shadow-dark w-full bg-soft-white dark:bg-dark-blue hover:bg-transparent border-transparent rounded-full h-9 md:h-10">Iniciar Sesión</button>

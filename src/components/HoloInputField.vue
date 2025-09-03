@@ -91,7 +91,7 @@
 </template>
 
 <script setup>
-import { computed } from 'vue'
+import { computed, onMounted } from 'vue'
 import { useConnectionStore } from '@/store/connection'
 
 defineProps(['cargando'])
@@ -101,6 +101,12 @@ const connection = useConnectionStore()
 const url = computed({
     get: () => connection.draftUrl,
     set: (val) => connection.setDraftUrl(val),
+})
+
+onMounted(() => {
+    if (!connection.draftUrl && connection.nodeUrl) {
+        connection.setDraftUrl(connection.nodeUrl)
+    }
 })
 </script>
 
