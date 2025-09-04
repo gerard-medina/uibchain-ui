@@ -50,15 +50,15 @@
             </div>
         </section>
         <section class="w-full pt-10 p-5 sm:p-10">
-            <h1 class="text-xl text-center mb-8 bg-gradient-to-r from-blue dark:from-blue to-blue-800 dark:to-[#57e8fc] from-40% to-65% bg-clip-text text-transparent">Blockchain</h1>
+            <h1 class="relative z-1 text-xl text-center mb-8 bg-gradient-to-r from-blue dark:from-blue to-blue-800 dark:to-[#57e8fc] from-40% to-65% bg-clip-text text-transparent">Blockchain</h1>
 
             <div class="grid gap-6 sm:grid-cols-2 lg:grid-cols-3 justify-items-center">
                 <div v-for="block in blocks" :key="block.id" class="w-full max-w-md relative rounded-lg shadow-light dark:shadow-dark flex flex-col">
-                    <div class="absolute z-1 top-0 right-0 bg-blue text-xs dark:text-white font-bold px-2 py-1 rounded-tr-md rounded-bl-md">{{ block.index === 0 ? 'genesis' : '#' + block.index }}</div>
-                    <div class="flex justify-center p-2 border-b">
-                        <p class="max-w-60 truncate"><strong>Hash:</strong> {{ block.hash }}</p>
+                    <div class="absolute z-1 top-0 right-0 bg-blue text-xs text-white font-medium px-2 py-1 rounded-tr-md rounded-bl-md">{{ block.index === 0 ? 'genesis' : '#' + block.index }}</div>
+                    <div class="flex justify-center p-2 border-b z-1">
+                        <p class="max-w-60 truncate" :title="block.hash"><strong>Hash:</strong> {{ block.hash }}</p>
                     </div>
-                    <div class="w-full flex flex-1">
+                    <div class="w-full flex flex-1 z-1">
                         <div class="w-1/3 p-2 border-r">
                             <p><strong>Fecha:</strong> {{ new Date(block.timestamp * 1000).toLocaleString() }}</p>
                             <p><strong>Dificultad:</strong> {{ block.difficulty }}</p>
@@ -68,7 +68,7 @@
                             <ul>
                                 <li v-for="transaction in block.data" :key="transaction.id">
                                     <div class="flex items-center justify-between px-2 py-1 border-b border-gray-200 dark:border-gray-700 hover:bg-gray-50 dark:hover:bg-gray-600">
-                                        <span class="flex-1 truncate font-mono text-sm text-gray-700 dark:text-gray-300">
+                                        <span class="flex-1 truncate font-mono text-sm text-gray-700 dark:text-gray-300" :title="transaction.senderAddress ?? 'coinbase'">
                                             {{ transaction.senderAddress ?? 'coinbase' }}
                                         </span>
     
@@ -80,8 +80,8 @@
                                                 →
                                             </span>
                                         </div>
-    
-                                        <span class="flex-1 truncate font-mono text-sm text-gray-700 dark:text-gray-300 text-right">
+
+                                        <span class="flex-1 truncate font-mono text-sm text-gray-700 dark:text-gray-300 text-right" :title="transaction.trOuts[0].address">
                                             {{ transaction.trOuts[0].address }}
                                         </span>
                                     </div>
@@ -89,8 +89,8 @@
                             </ul>
                         </div>
                     </div>
-                    <div class="flex justify-center p-2 border-t">
-                        <p class="max-w-60 truncate"><strong>Hash anterior:</strong> {{ block.previousHash }}</p>
+                    <div class="flex justify-center p-2 border-t z-1">
+                        <p class="max-w-60 truncate" :title="block.previousHash"><strong>Hash anterior:</strong> {{ block.previousHash }}</p>
                     </div>
                 </div>
             </div>
@@ -137,7 +137,7 @@ onMounted(() => {
 });
 
 function cutExtraChars(str) {
-    return str.length > 7 ? str.slice(0, 7) + '...' : str;
+    return str.length > 8 ? str.slice(0, 8) + '...' : str;
 }
 
 function goToPage(page) {
