@@ -27,3 +27,9 @@ npm run dev
 ```sh
 npm run build
 ```
+
+### Run fake back
+
+```sh
+npx json-server db.json
+```

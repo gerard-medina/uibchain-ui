@@ -16,7 +16,7 @@ const props = defineProps({
 <style scoped>
 .text-btn {
     cursor: pointer;
-    font-weight: 300;
+    font-weight: 400;
 }
 
 .holo-underline {
